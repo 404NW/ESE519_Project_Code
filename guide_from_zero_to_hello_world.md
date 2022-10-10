@@ -3,11 +3,11 @@
 
 ## Machine Environment
 
-** OS:** Ubuntu 22.04.1 LTS
+**OS:** Ubuntu 22.04.1 LTS
 
-** Processor:** Intel i5-11400H
+**Processor:** Intel i5-11400H
 
-** Laptop Model:** GigaByte G5
+**Laptop Model:** GigaByte G5
 
 
 ## Installed Software
@@ -63,7 +63,7 @@ Now, you have the local copy of the SDK and bunch of examples including the hell
 ```
 2. Additionally, you may need to check if the libstd++-arm-none-eabi-newlib has been installed automatically by ` sudo apt install libstd++-arm-none-eabi-newlib`
 
-** From this point, you are all set with the SDK environment setup and we are gonna start with the example: hello_world! **
+**From this point, you are all set with the SDK environment setup and we are gonna start with the example: hello_world!**
 
 ### Step 3: Building "Hello_World"
 
@@ -82,3 +82,5 @@ Now, you have the local copy of the SDK and bunch of examples including the hell
     (2) Secondly, connect with screen by `screen /dev/ttyACM0 115200`
 
     (3) Finally, you should get connected with your RP2040 if you could see the REPL information if you use CTRL-C.
+
+**Now, you should be able to see the printed "hello world!" in your terminal window. Congratulations!**
