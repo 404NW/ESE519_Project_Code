@@ -12,9 +12,11 @@
 
 ## Installed Software
 **1. Terminal**
+
     Since the Ubuntu OS is a Linux OS, it contains a terminal. That's what we are gonna use.
 
 **2. VIM / Text Editor**
+
     gVIM, a graphical VIM text editor which can be found from the ubuntu official software store.
 
 **3. Serial Console**
@@ -34,7 +36,7 @@ Use ` sudo apt install cmake gcc-arm-none-eabi libnewlib-arm-none-eabi build ess
 ## Detailed Guide from Zero to Hello.C
 ### Step 0: Environment Installation
 
-1. Before starting, you need to install softwares #1-#4 in the installed software section.
+Before starting, you need to install softwares #1-#4 in the installed software section.
 
 
 ### Step 1: Get the SDK and examples
@@ -73,7 +75,7 @@ Now, you have the local copy of the SDK and bunch of examples including the hell
 4. Now, enter the target project and build the project by `make -j4`. To be more detailed, `-j4` indicates the building will be processed in parallel by 4 processors.
 5. As a result, after the building has finished, a `.uf2` file can be found from the `build/target_project_name` folder.
 
-## Step 4: Load the compiled file to the board and make it work!
+### Step 4: Load the compiled file to the board and make it work!
 1. To do this, you need to connect your RP2040 board with the computer through USB and then drag the `.uf2` file to the RP2040 in the GUI of your file management system. Then, the RP2040 will be automatically unmounted from your computer and rebooted. After the reboot finished, the loaded program will start.
 2. In order to monitor the output from your RP2040, open the serial console by steps below(assume you are in your home directory)
 
