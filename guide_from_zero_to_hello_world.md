@@ -13,11 +13,11 @@
 ## Installed Software
 **1. Terminal**
 
-    Since the Ubuntu OS is a Linux OS, it contains a terminal. That's what we are gonna use.
+Since the Ubuntu OS is a Linux OS, it contains a terminal. That's what we are gonna use.
 
 **2. VIM / Text Editor**
 
-    gVIM, a graphical VIM text editor which can be found from the ubuntu official software store.
+gVIM, a graphical VIM text editor which can be found from the ubuntu official software store.
 
 **3. Serial Console**
 
