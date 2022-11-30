@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "fonts.h": "c",
+        "st7735.h": "c",
+        "stdint.h": "c"
+    }
+}
