@@ -1,7 +1,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <tusb.h>
+#include <string.h>
+#include <ctype.h>
+// include <tusb.h>
 #include <time.h>
 #include "pico/stdlib.h"
 #include "pico/multicore.h"
@@ -9,6 +11,8 @@
 #include "lib/st7735.h"
 #include "lib/fonts.h"
 #include "hardware/adc.h"
+#include "tusb.h"
+
 
 uint8_t image_buf[324*324];
 uint8_t displayBuf[80*160*2];
@@ -16,6 +20,8 @@ uint8_t header[2] = {0x55,0xAA};
 
 #define FLAG_VALUE 123
 #define BUZZER_CTR_PIN 27
+#define WIFI_ENABLE_PIN 26
+#define TIMEOUT_S 2
 
 
 void core1_entry() {
@@ -34,6 +40,10 @@ void core1_entry() {
 
 	gpio_init(BUZZER_CTR_PIN);
 	gpio_set_dir(BUZZER_CTR_PIN, GPIO_OUT);	
+
+	gpio_init(WIFI_ENABLE_PIN);
+	gpio_set_dir(WIFI_ENABLE_PIN, GPIO_OUT);	
+	gpio_put(WIFI_ENABLE_PIN,1);
 
 	ST7735_Init();
 	//ST7735_DrawImage(0, 0, 80, 160, arducam_logo);
@@ -59,6 +69,10 @@ void core1_entry() {
 	config.image_buf_size = sizeof(image_buf);
 
 	arducam_init(&config);
+
+	uart_init(uart0, 115200);
+	// gpio_set_function(0, GPIO_FUNC_UART);
+	// gpio_set_function(1, GPIO_FUNC_UART);
 
 	adc_init();
 	adc_set_temp_sensor_enabled(true);
@@ -88,72 +102,85 @@ void core1_entry() {
 	bool roosterEnabled = true;
 	int roosterCounter = 0;
 
+
 	// starting with the timesetting
 	printf("Start time Initialization.\n");
-	while(!(hourSetting && minSetting && secSetting) && false){
-		sleep_ms(100);
-		if(counter < 2){
-			gpio_put(PIN_LED, !gpio_get(PIN_LED));
-			inputch = getchar_timeout_us(0);
-			if(inputch == 'H'|| inputch == 'h'){
-				currentContent = 0;
-				printf("Current Content is hour \n");
-			}else if(inputch == 'M'||inputch == 'm'){
-				currentContent = 1;
-				printf("Current Content is min \n");
-			}else if(inputch == 's'||inputch == 'S'){
-				currentContent = 2;
-				printf("Current Content is sec \n");
-			}else{
-				if(inputch <= '9' && inputch >= '0'){
-					inputchars[counter] = inputch;
-					counter++;
-					printf("Char %c captured, counter = %d \n",inputch, counter);
-				}
-			}
-		}else{
-			printf("Captured two chars input with currentContent %d\n", currentContent);
-			if(currentContent == 0 && (!hourSetting)){
-				hour = (int)(inputchars[0]-'0')*10 + (int)(inputchars[1]-'0');
-				if(hour >= 0 && hour <= 24){
-					printf("hour setting finished with %d\n", hour);
-					hourSetting = true;
-				}else{
-					printf("Invalid hour input of %d, please input again! \n", hour);
-					
-				}
-			}else if(currentContent == 1 && (!minSetting)){
-				minute = (int)(inputchars[0]-'0')*10 + (int)(inputchars[1]-'0');
-				if(minute >= 0 && minute <= 60){
-					printf("minute setting finished with %d\n", minute);
-					minSetting = true;
-				}else{
-					printf("Invalid min input of %d, please input again! \n", minute);
-					
-				}
-				
-			}else if(currentContent == 2 && (!secSetting)){
-				sec = (int)(inputchars[0]-'0')*10 + (int)(inputchars[1]-'0');
-				if(sec >= 0 && sec <= 60){
-					printf("sec setting finished with %d\n", sec);
-					secSetting = true;
-				}else{
-					printf("Invalid sec input of %d, please input again! \n", sec);
-					
-				}
-				
-			}else{
-				printf("Sorry! Please indicate the meaning of your input.\n");
-			}
 
-			// reset the counter
-			counter = 0;
+	while(true){
+
+		int rd;
+		int k;
+		int count;
+		char url[] = "https://worldtimeapi.org/api/timezone/America/New_York";
+		char buf[257];
+		char tempSt[500];
+		char hourNum[3];
+		char minuteNum[3];
+		char secondNum[3];
+		bool validTime = true;
+		// char *singleResult[256];
+
+		printf("%s\n", url); // fflush(stdout);
+		uart_puts(uart0, "https://worldtimeapi.org/api/timezone/America/New_York"); 
+		uart_putc_raw(uart0, '\n');
+		printf("Reading starts******************************\n");
+		buf[256] = '\0';
+		tempSt[499] = '\0';
+		hourNum[2] = '\0';
+		minuteNum[2] = '\0';
+		secondNum[2] = '\0';
+		count = 0;
+		for(k = 0; k<256;k++){
+			buf[k] = '0';
 		}
-	}
-	printf("The time has been initialized with %d: %d: %d \n", hour, minute, sec);
 
+		while (rd = uart_is_readable_within_us(uart0, TIMEOUT_S*1000000) > 0)
+		{
+		if (rd>256)  rd=256;
+		uart_read_blocking(uart0, buf, rd);
+		// fwrite(buf, rd, 1, stdout); 
+		// fwrite(buf, rd, 1, singleResult);
+		// fflush(stdout);
+		tempSt[count] = buf[0];
+		count++;
+		// printf((char)buf[0]);
+		printf("%c", buf[0]);
+		
+		// fflush(singleResult);
+		}
+		printf("\n");
+		printf("Reading stops*********************************\n");
+		printf("Counter: %d\n", count);
+		printf("Content: %s\n", tempSt);
+		printf("Time Index: %s\n", strstr(tempSt, "datetime"));
+		if(strstr(tempSt, "datetime") && count >= 353){
+			strncpy(hourNum, strstr(tempSt, "datetime")+22, 2);
+			strncpy(minuteNum, strstr(tempSt, "datetime")+25, 2);
+			strncpy(secondNum, strstr(tempSt, "datetime")+28, 2);
+			printf("The time is %s:%s:%s\n",hourNum,minuteNum,secondNum);
+
+			validTime = isdigit(hourNum[0])&&isdigit(minuteNum[0])&&isdigit(secondNum[0])&&isdigit(hourNum[1])&&isdigit(minuteNum[1])&&isdigit(secondNum[1]);
+			printf("time validation: %d\n", validTime);
+			if(validTime){
+				hour = (int)(hourNum[0]-'0')*10+(int)(hourNum[1]-'0');
+				minute = (int)(minuteNum[0]-'0')*10+(int)(minuteNum[1]-'0');
+				sec = ((int)(secondNum[0]-'0')*10+(int)(secondNum[1]-'0')+3)%60;
+				printf("The time has been initialized with %d:%d:%d \n", hour, minute, sec);
+				break;
+			}
+		}
+		count = 0;
+		
+	}
+
+	int cycleCounter = 0;
 	bool ambientCTL = false;
+	bool previousAmbient = false;
+	int backgroundColor;
+	clock_t start, finish;
+	int duration;
 	while (true) {
+		start = clock();
 		gpio_put(PIN_LED, !gpio_get(PIN_LED));
 		
 		arducam_capture_frame(&config);
@@ -176,18 +203,11 @@ void core1_entry() {
 		avarageLightLevel = total/80*160*2;
 		printf("The avarage light level is: %d \n", avarageLightLevel);
 		
-		if(avarageLightLevel >= 10000000 && roosterCounter <= 10){
+		if(avarageLightLevel >= 10000000 && roosterCounter <= 40){
 			// turn on the buzzer without blocking the main loop
 			gpio_put(BUZZER_CTR_PIN, 1);
 			// Count the total length of the buzzer
 			roosterCounter++;
-			if(roosterCounter == 10){
-				gpio_put(BUZZER_CTR_PIN, 0);
-			}
-
-			// TODO detect the button input, if the input detected, change the counter to 11 immidiately
-			
-			
 
 		}else{
 			gpio_put(BUZZER_CTR_PIN, 0);
@@ -195,8 +215,10 @@ void core1_entry() {
 
 		if(avarageLightLevel <= 10000000){
 			ambientCTL = true;
+			backgroundColor = ST7735_COLOR565(0x55,0x55,0x55);
 		}else{
 			ambientCTL = false;
+			backgroundColor = 0xffff;
 		}
 
 		// TODO alarm clock time setting/execution logic
@@ -210,7 +232,9 @@ void core1_entry() {
 		float temp = 27-(result-0.706)/0.003021;
 		printf("Temp = %f C\n", temp);
 
-		itoa((int)temp, tempchars, 10);
+		// itoa((int)temp, tempchars, 30);
+		tempchars[0] = (char)((int)temp/10 + '0');
+		tempchars[1] = (char)((int)temp%10 + '0');
 		tempchars[2] = 'o';
 		tempchars[3] = 'C';
 		tempchars[4] = '\0';
@@ -236,7 +260,7 @@ void core1_entry() {
 			hour = 0;
 		}
 
-		sleep_ms(1000);
+		// sleep_ms(920);
 
 		// update the roosterCounter
 		if(hour == 0 && minute == 0 && sec == 0){
@@ -262,22 +286,30 @@ void core1_entry() {
 		secchars[2] = 's';
 		secchars[3] = ' ';
 		secchars[4] = '\0';
-		if(ambientCTL){
-			ST7735_FillScreen(ST7735_COLOR565(0xaa,0xaa ,0xaa));
-			ST7735_WriteString(0,0,"Temp",Font_16x26, 0, ST7735_COLOR565(0xaa,0xaa ,0xaa));
-			ST7735_WriteString(0,27,tempchars,Font_16x26, 0, ST7735_COLOR565(0xaa, 0xaa, 0xaa));
-			ST7735_WriteString(0,54, hourchars,Font_16x26, 0, ST7735_COLOR565(0xaa, 0xaa, 0xaa));
-			ST7735_WriteString(0,81, minchars,Font_16x26, 0, ST7735_COLOR565(0xaa, 0xaa, 0xaa));
-			ST7735_WriteString(0,108, secchars,Font_16x26, 0, ST7735_COLOR565(0xaa, 0xaa, 0xaa));
-		}else{
-			ST7735_FillScreen(0xffff);
-			ST7735_WriteString(0,0,"Temp",Font_16x26, 0, 0xffff);
-			ST7735_WriteString(0,27,tempchars,Font_16x26, 0, 0xffff);
-			ST7735_WriteString(0,54, hourchars,Font_16x26, 0, 0xffff);
-			ST7735_WriteString(0,81, minchars,Font_16x26, 0, 0xffff);
-			ST7735_WriteString(0,108, secchars,Font_16x26, 0, 0xffff);
-		}
 		
+		if(!(ambientCTL==previousAmbient)){
+			ST7735_FillScreen(backgroundColor);
+		}
+		ST7735_WriteString(0,0,"Temp",Font_16x26, 0, backgroundColor);
+		ST7735_WriteString(0,27,tempchars,Font_16x26, 0, backgroundColor);
+		ST7735_WriteString(0,54, hourchars,Font_16x26, 0, backgroundColor);
+		ST7735_WriteString(0,81, minchars,Font_16x26, 0, backgroundColor);
+		ST7735_WriteString(0,108, secchars,Font_16x26, 0, backgroundColor);
+
+		previousAmbient = ambientCTL;
+		cycleCounter++;
+		printf("cycle num: %d\n", cycleCounter);
+		finish = clock();
+
+		duration = ((int)(finish-start*1000)/CLOCKS_PER_SEC*11);// 9
+		printf("The display takes %dms \n", duration);
+
+		if(duration < 1000){
+			sleep_ms(1000-duration);
+		}else{
+			sleep_ms(duration);
+		}
+		// sleep_ms(900);
 
 	}
 }
@@ -287,6 +319,7 @@ void core1_entry() {
 int main() {
   int loops=20;
   stdio_init_all();
+  stdio_filter_driver(&stdio_usb);
   while (!tud_cdc_connected()) { sleep_ms(100); if (--loops==0) break;  }
 
   printf("tud_cdc_connected(%d)\n", tud_cdc_connected()?1:0);

@@ -1,10 +1,13 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.13)
+
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 
 #include(pico-sdk/pico_sdk_init.cmake)
 # Pull in PICO SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(rp2040_arducam)
+project(rp2040_arducam C CXX ASM)
 
 pico_sdk_init()
 
@@ -28,7 +31,8 @@ target_link_libraries(arducam_firmware
 	hardware_adc
 	pico_multicore
 )
+
+pico_enable_stdio_uart(arducam_firmware 1)
 pico_enable_stdio_usb(arducam_firmware 1)
-pico_enable_stdio_uart(arducam_firmware 0)
 
 pico_add_extra_outputs(arducam_firmware)
