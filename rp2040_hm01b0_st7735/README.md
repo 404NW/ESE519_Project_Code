@@ -2,7 +2,6 @@
 
 
 ## Hardware Connection
-![IMAGE ALT TEXT](photos/Pico4MLcbot.15pc.jpg)
 ```
 int PIN_LED = 25;
 int PIN_CAM_SIOC = 5; // I2C0 SCL
@@ -48,13 +47,6 @@ int ESP1_TX         = 1;
 ## Comments
 
 It turned out that "capture camera frame, then show on display" loop runs sqrt(2) times faster on core1 (higher processing framerate). In addition another factor 2 was achieved by going to the "safe" double frequency 250MHz overclocking. With that, now 15.6 frames per second get shown on 160x80 display.
-
-## test
-[https://www.youtube.com/watch?v=CXhm8GdwkNc](https://www.youtube.com/watch?v=CXhm8GdwkNc)  
-![IMAGE ALT TEXT](photos/Pico4ML-BLE.anim.gif)  
-![IMAGE ALT TEXT](photos/20211207_202449.part.50pc.jpg)  
-![IMAGE ALT TEXT](photos/20211207_220948.part.25pc.jpg)  
-![IMAGE ALT TEXT](photos/20211124_204656.part.20pc.jpg)
 
 ## Thanks
  Special thanks to Hermann-SW for providing the code
