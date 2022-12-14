@@ -182,7 +182,6 @@ void core1_entry() {
 	int cycleCounter = 0;
 	bool ambientCTL = false;
 	bool previousAmbient = false;
-	bool demoModeCTL = false; // false for regular mode, true for demoMode
 	int backgroundColor;
 	clock_t start, finish;
 	int duration;
@@ -210,12 +209,13 @@ void core1_entry() {
 		avarageLightLevel = total/80*160*2;
 		printf("The avarage light level is: %d \n", avarageLightLevel);
 		
-		if(avarageLightLevel >= 10000000){ // && roosterCounter <= 40){
+		if(avarageLightLevel >= 10000000 && roosterCounter <= 40){
 			// turn on the buzzer without blocking the main loop
 			gpio_put(BUZZER_CTR_PIN, 1);
 			// Count the total length of the buzzer
 			roosterCounter++;
 
+			ST7735_DrawImage(0, 0, 80, 160, rooster);
 		}else{
 			gpio_put(BUZZER_CTR_PIN, 0);
 		}
@@ -293,7 +293,24 @@ void core1_entry() {
 		secchars[2] = 's';
 		secchars[3] = ' ';
 		secchars[4] = '\0';
+		// demo
+		/*
+		if(!(ambientCTL==previousAmbient)){
+			ST7735_FillScreen(backgroundColor);
+			if(!ambientCTL){
+				ST7735_DrawImage(0, 0, 80, 160, rooster);
+			}
+		}
 		
+		if(ambientCTL){
+			ST7735_WriteString(0,0,"Temp",Font_16x26, 0, backgroundColor);
+			ST7735_WriteString(0,27,tempchars,Font_16x26, 0, backgroundColor);
+			ST7735_WriteString(0,54, hourchars,Font_16x26, 0, backgroundColor);
+			ST7735_WriteString(0,81, minchars,Font_16x26, 0, backgroundColor);
+			ST7735_WriteString(0,108, secchars,Font_16x26, 0, backgroundColor);			
+		}*/
+
+		// main functionality
 		if(!(ambientCTL==previousAmbient)){
 			ST7735_FillScreen(backgroundColor);
 		}
@@ -301,7 +318,9 @@ void core1_entry() {
 		ST7735_WriteString(0,27,tempchars,Font_16x26, 0, backgroundColor);
 		ST7735_WriteString(0,54, hourchars,Font_16x26, 0, backgroundColor);
 		ST7735_WriteString(0,81, minchars,Font_16x26, 0, backgroundColor);
-		ST7735_WriteString(0,108, secchars,Font_16x26, 0, backgroundColor);
+		ST7735_WriteString(0,108, secchars,Font_16x26, 0, backgroundColor);			
+
+
 
 		previousAmbient = ambientCTL;
 		cycleCounter++;
