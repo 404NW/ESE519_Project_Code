@@ -168,7 +168,13 @@ void core1_entry() {
 				printf("The time has been initialized with %d:%d:%d \n", hour, minute, sec);
 				break;
 			}
+
 		}
+		ST7735_WriteString(0,0,"Time",Font_16x26, 0, 0xffff);
+		ST7735_WriteString(0,27,"Init",Font_16x26, 0, 0xffff);
+		ST7735_WriteString(0,54, "Thru",Font_16x26, 0, 0xffff);
+		ST7735_WriteString(0,81, "WIFI",Font_16x26, 0, 0xffff);
+
 		count = 0;
 		
 	}
@@ -176,6 +182,7 @@ void core1_entry() {
 	int cycleCounter = 0;
 	bool ambientCTL = false;
 	bool previousAmbient = false;
+	bool demoModeCTL = false; // false for regular mode, true for demoMode
 	int backgroundColor;
 	clock_t start, finish;
 	int duration;
@@ -203,7 +210,7 @@ void core1_entry() {
 		avarageLightLevel = total/80*160*2;
 		printf("The avarage light level is: %d \n", avarageLightLevel);
 		
-		if(avarageLightLevel >= 10000000 && roosterCounter <= 40){
+		if(avarageLightLevel >= 10000000){ // && roosterCounter <= 40){
 			// turn on the buzzer without blocking the main loop
 			gpio_put(BUZZER_CTR_PIN, 1);
 			// Count the total length of the buzzer
