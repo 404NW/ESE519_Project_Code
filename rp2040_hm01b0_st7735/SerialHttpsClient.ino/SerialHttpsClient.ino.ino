@@ -13,7 +13,7 @@ void setup() {
   Serial.begin(115200);
 
   WiFi.mode(WIFI_STA);
-  WiFiMulti.addAP("Apollo","w1234567");
+  WiFiMulti.addAP("YOUR_WIFI_NAME","YOUR_WIFI_PASSWORD");
   pinMode(LED_BUILTIN, OUTPUT);
 }
 
