@@ -28,25 +28,15 @@ int ESP1_TX         = 1;
 
 ## Clone repo 
 ```bash
-    git clone https://github.com/Hermann-SW/RPI-Pico-Cam.git
+    git clone git@github.com:minghuin/ESE519_General.git
 ```
 ## Compile rp2040_hm01b0_st7735 demo
 ```bash
-    cd RPI-Pico-Cam/rp2040_hm01b0_st7735
-    mkdir build
-    cd build
+    cd rp2040_hm01b0_st7735
     cmake ..
-    cd build 
-    make 
+    make -j4
 ```
 ## Copy the arducam_firmware.uf2 to pico
 ```bash
     cp arducam_firmware.uf2 /media/pi/RPI-RP2/
 ```
-
-## Comments
-
-It turned out that "capture camera frame, then show on display" loop runs sqrt(2) times faster on core1 (higher processing framerate). In addition another factor 2 was achieved by going to the "safe" double frequency 250MHz overclocking. With that, now 15.6 frames per second get shown on 160x80 display.
-
-## Thanks
- Special thanks to Hermann-SW for providing the code
